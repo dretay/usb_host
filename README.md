@@ -1,4 +1,4 @@
-## UsbHost: A C-based generic MAX3421E kibrary for use in uControllers ##
+## UsbHost: A C-based generic MAX3421E library for use in uControllers ##
 
 ### Overview ###
 
