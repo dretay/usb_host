@@ -14,6 +14,7 @@ struct usbdescriptorparser {
     void (*peek_device_descriptor)(USBDevice* my_usb_device);
     void (*parse_device_descriptor)(USBDevice* my_usb_device);
     void (*parse_config_descriptor)(USBDevice* my_usb_device);
+    void (*get_descriptor_string)(u8 index, char* output, u32 size);
 };
 
 extern const struct usbdescriptorparser UsbDescriptorParser;

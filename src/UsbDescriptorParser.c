@@ -2,15 +2,19 @@
 
 static PlatformConfig platform_config;
 
-static void get_descriptor_string(u8 index, char* prefix)
+static void get_descriptor_string(u8 index, char* output, u32 size)
 {
     u32* buffer_size = USBCore.get_last_transfer_size();
     u8* usb_buffer = USBCore.get_usb_buffer();
     if (index != 0) {
         if (!USBCore.control_read_transfer(bmREQ_GET_DESCR, USB_REQUEST_GET_DESCRIPTOR, index, USB_DESCRIPTOR_STRING, 0, 0x40)) {
-            log_debug("\t%s  ", prefix);
+            int output_idx = 0;
             for (int i = 2; i < *buffer_size; i += 2) {
-                log_append("%c", usb_buffer[i]);
+                output[output_idx] = usb_buffer[i];
+                output_idx++;
+                if (output_idx >= size) {
+                    break;
+                }
             }
         }
     }
@@ -41,10 +45,6 @@ static void parse_device_descriptor(USBDevice* my_usb_device)
         log_trace("\tThis device has %u configuration", descriptor->bNumConfigurations);
         log_trace("\tVendor  ID: 0x%04X", descriptor->idVendor);
         log_trace("\tProduct ID: 0x%04X", descriptor->idProduct);
-
-        get_descriptor_string(my_usb_device->device_descriptor.iManufacturer, "Manufacturer: ");
-        get_descriptor_string(my_usb_device->device_descriptor.iProduct, "Product: ");
-        get_descriptor_string(my_usb_device->device_descriptor.iSerialNumber, "S/N: ");
     }
 }
 
@@ -153,4 +153,5 @@ const struct usbdescriptorparser UsbDescriptorParser = {
     .peek_device_descriptor = peek_device_descriptor,
     .parse_device_descriptor = parse_device_descriptor,
     .parse_config_descriptor = parse_config_descriptor,
+    .get_descriptor_string = get_descriptor_string,
 };
