@@ -10,6 +10,7 @@
 
 struct hiduniversal {
     USBDevice* (*new)(PlatformConfig* config);
+    u32 (*get_report_descriptor)(char* output, u32 size);
 };
 
 extern const struct hiduniversal HIDUniversal;

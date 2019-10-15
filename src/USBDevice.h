@@ -11,7 +11,7 @@ struct USBDevice {
     void (*parse)(void);
     void (*configure)(void);
     bool (*get_device_descriptor)(u8 length);
-    void (*set_handler)(void (*handler)(uint8_t* prev_buf, uint8_t* buf));
+    void (*set_handler)(void (*handler)(uint8_t* prev_buf, uint8_t* buf, u16 read));
     u8 address;
     USB_CONFIGURATION_DESCRIPTOR configuration_descriptor;
     USB_INTERFACE_DESCRIPTOR interface_descriptor;

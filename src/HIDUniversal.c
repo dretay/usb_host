@@ -4,7 +4,7 @@ static PlatformConfig platform_config;
 
 static USBDevice device;
 static uint8_t prevBuf[constBuffLen];
-void (*handler)(uint8_t* prev_buf, uint8_t* buf);
+void (*handler)(uint8_t* prev_buf, uint8_t* buf, u16 read);
 
 static void zero_memory(uint8_t len, uint8_t* buf)
 {
@@ -59,28 +59,36 @@ static u8 poll()
                 log_append("%02X ", buf[ix]);
             }
 
-            handler(prevBuf, buf);
+            handler(prevBuf, buf, read);
         }
         save_buffer(read, buf, prevBuf);
     }
     return rcode;
 }
-static void parse_report_descriptor()
+u32 get_report_descriptor(char* output, u32 size)
 {
     // Get the 9-byte configuration descriptor
 
-    log_debug("HID Configuration Descriptor ");
-    log_debug("\t");
+    log_info("HID Configuration Descriptor ");
+    log_info("\t");
     u32* buffer_size = USBCore.get_last_transfer_size();
     u8* usb_buffer = USBCore.get_usb_buffer();
     if (!USBCore.control_read_transfer(0x81, USB_REQUEST_GET_DESCRIPTOR, 0, HID_REPORT_DESCRIPTOR, 0, 141)) {
-        for (int ix = 0; ix < *buffer_size; ix++) {
-            log_append("%02X ", usb_buffer[ix]);
-            if ((ix + 1) % 8 == 0) {
-                log_debug("\t");
+        int output_idx = 0;
+        for (int i = 0; i < *buffer_size; i++) {
+            output[output_idx] = usb_buffer[i];
+            log_append("%02X ", usb_buffer[i]);
+            if ((i + 1) % 8 == 0) {
+                log_info("\t");
+            }
+            output_idx++;
+            if (output_idx >= size) {
+                break;
             }
         }
+        return *buffer_size;
     }
+    return 0;
 }
 static void configure(void)
 {
@@ -91,11 +99,9 @@ static void configure(void)
     //duration=indefinite report=0
     USBCore.control_write_no_data(0x21, USB_REQUEST_GET_INTERFACE, 0, 0, 0, 0);
 
-    parse_report_descriptor();
-
     device.poll_enabled = true;
 }
-static void set_handler(void (*handler_in)(uint8_t* prev_buf, uint8_t* buf))
+static void set_handler(void (*handler_in)(uint8_t* prev_buf, uint8_t* buf, u16 read))
 {
     handler = handler_in;
 }
@@ -112,4 +118,5 @@ static USBDevice* new (PlatformConfig* platform_config_in)
 }
 const struct hiduniversal HIDUniversal = {
     .new = new,
+    .get_report_descriptor = get_report_descriptor,
 };

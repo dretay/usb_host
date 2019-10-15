@@ -36,15 +36,23 @@ static void parse_device_descriptor(USBDevice* my_usb_device)
     u32* buffer_size = USBCore.get_last_transfer_size();
     u8* usb_buffer = USBCore.get_usb_buffer();
     USB_DEVICE_DESCRIPTOR* descriptor = (USB_DEVICE_DESCRIPTOR*)usb_buffer;
-    log_trace("Device Descriptor ", 0);
+    log_info("Device Descriptor ", 0);
 
     if (!USBCore.control_read_transfer(bmREQ_GET_DESCR, USB_REQUEST_GET_DESCRIPTOR, 0, USB_DESCRIPTOR_DEVICE, 0, descriptor->bLength)) {
 
         memcpy(&my_usb_device->device_descriptor, usb_buffer, sizeof(USB_DEVICE_DESCRIPTOR));
 
         log_trace("\tThis device has %u configuration", descriptor->bNumConfigurations);
-        log_trace("\tVendor  ID: 0x%04X", descriptor->idVendor);
-        log_trace("\tProduct ID: 0x%04X", descriptor->idProduct);
+        log_info("\tVendor  ID: 0x%04X", descriptor->idVendor);
+        log_info("\tProduct ID: 0x%04X", descriptor->idProduct);
+
+        char product_name[255] = { 0 };
+        get_descriptor_string(my_usb_device->device_descriptor.iProduct, product_name, 255);
+        log_info("\tProduct: %s", product_name);
+
+        char manufacturer_name[255] = { 0 };
+        get_descriptor_string(my_usb_device->device_descriptor.iManufacturer, manufacturer_name, 255);
+        log_info("\tManufacturer: %s", manufacturer_name);
     }
 }
 
